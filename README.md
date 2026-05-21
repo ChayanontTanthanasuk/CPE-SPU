@@ -38,8 +38,8 @@
 ### 1. Clone repo
 
 ```bash
-git clone <repo-url>
-cd sales-organize-web
+git clone https://github.com/ChayanontTanthanasuk/CPE-SPU.git
+cd CPE-SPU
 ```
 
 ### 2. ติดตั้ง dependencies
@@ -91,6 +91,10 @@ bun test         # รัน Vitest
 .
 ├── src/
 │   ├── app/
+│   │   ├── api/                  ← ⭐ API layer (single source of truth)
+│   │   │   └── example.api.ts    ← ตัวอย่าง — สร้าง {name}.api.ts ที่นี่
+│   │   ├── stores/
+│   │   │   └── auth.store.ts     ← Zustand store เก็บ accessToken
 │   │   ├── router/
 │   │   │   ├── routes/           ← File-based routes (สร้างหน้าใหม่ที่นี่)
 │   │   │   └── routeTree.gen.ts  ← Auto-generated (ห้ามแก้มือ)
@@ -109,12 +113,16 @@ bun test         # รัน Vitest
 │   │
 │   ├── shared/
 │   │   ├── components/
-│   │   │   └── ui/               ← Radix+Tailwind primitives (ถ้าจะเเก้บอกด้วย)
+│   │   │   └── ui/               ← Radix+Tailwind primitives (ห้ามแก้)
 │   │   ├── hooks/                ← Shared hooks
 │   │   └── lib/                  ← Utility functions
 │   │
 │   ├── infra/
-│   │   └── http/                 ← HTTP client + interceptors
+│   │   ├── http/                 ← ⭐ HTTP client + interceptors
+│   │   │   ├── client.ts         ← fetch-based HttpClient class
+│   │   │   ├── index.ts          ← export authClient / apiClient
+│   │   │   └── interceptors/     ← auth, error interceptors
+│   │   └── utils/env/            ← อ่าน VITE_* env vars
 │   │
 │   ├── i18n/
 │   │   ├── th.json               ← ข้อความภาษาไทย
@@ -182,14 +190,63 @@ src/features/my-feature/
 
 ---
 
-## HTTP Client
+## HTTP Client & API Layer
 
-มี HTTP client พร้อม interceptor chain อยู่ที่ `src/infra/http/` สำหรับเรียก backend API
+### HTTP Client (`src/infra/http/`)
+
+มี 2 instance:
+
+| instance | ใช้เมื่อ | interceptors |
+|---|---|---|
+| `authClient` | public endpoints (login, refresh token) | ไม่มี |
+| `apiClient` | protected endpoints | inject Bearer token อัตโนมัติ |
 
 ```ts
+import { apiClient, authClient } from '@/infra/http';
+
+// protected — ต้อง login ก่อน
+const data = await apiClient.get<ResponseType>('/endpoint');
+
+// public — ไม่ต้อง token
+const res = await authClient.post<LoginResponse>('/auth/login', body);
+```
+
+### API Layer (`src/app/api/`)
+
+**ทุก API call ต้องอยู่ที่ `src/app/api/{name}.api.ts` เท่านั้น** — features ไม่มี service ของตัวเอง
+
+```ts
+// src/app/api/news.api.ts
 import { apiClient } from '@/infra/http';
 
-const data = await apiClient.get<ResponseType>('/endpoint');
+export const newsService = {
+  getAll: () => apiClient.get<News[]>('/news'),
+  getById: (id: number) => apiClient.get<News>(`/news/${id}`),
+  create: (body: CreateNews) => apiClient.post<News>('/news', body),
+  update: (id: number, body: UpdateNews) => apiClient.put<News>(`/news/${id}`, body),
+  delete: (id: number) => apiClient.delete(`/news/${id}`),
+};
+```
+
+### Auth Store (`src/app/stores/auth.store.ts`)
+
+เก็บ `accessToken` ไว้ใน Zustand — interceptor ดึงไปใส่ header อัตโนมัติ
+
+```ts
+import { useAuthStore } from '@/app/stores/auth.store';
+
+const { setAccessToken, clearAuth } = useAuthStore();
+
+setAccessToken('your-token');  // หลัง login สำเร็จ
+clearAuth();                   // หลัง logout
+```
+
+### Environment (`src/infra/utils/env/`)
+
+```ts
+import { env } from '@/infra/utils/env';
+
+console.log(env.API_BASE_URL); // http://localhost:8080/api/v1
 ```
 
 ---
