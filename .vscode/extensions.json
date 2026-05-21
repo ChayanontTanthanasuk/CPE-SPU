@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "dsznajder.es7-react-js-snippets",
+    "NuclleaR.vscode-extension-auto-import",
+    "steoates.autoimport",
+    "BracketPairColorDLW.bracket-pair-color-dlw",
+    "formulahendry.auto-close-tag",
+    "formulahendry.auto-complete-tag",
+    "formulahendry.auto-rename-tag"
+  ],
+  "unwantedRecommendations": ["hookyqr.beautify"]
+}
