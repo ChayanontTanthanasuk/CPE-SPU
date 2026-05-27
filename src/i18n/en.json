@@ -6,5 +6,17 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "search": "Search"
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "news": "News & Announcements",
+    "faculty": "Faculty & Staff",
+    "activities": "Activities",
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "saveSuccess": "Saved successfully",
+    "deleteSuccess": "Deleted successfully",
+    "errorMsg": "An error occurred. Please try again."
   }
 }

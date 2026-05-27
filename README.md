@@ -148,6 +148,7 @@ bun test         # รัน Vitest
 ### ตัวอย่าง: สร้างหน้า `/about`
 
 ```tsx
+
 // src/app/router/routes/about.tsx
 import { createFileRoute } from '@tanstack/react-router';
 

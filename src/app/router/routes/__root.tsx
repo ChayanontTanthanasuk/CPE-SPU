@@ -1,5 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
-import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router';
+import { createRootRouteWithContext, Link, Outlet, useRouterState } from '@tanstack/react-router';
+import { Toaster } from 'sonner';
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -10,23 +11,32 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function RootLayout() {
+  const isAdmin = useRouterState({ select: (s) => s.location.pathname.startsWith('/admin') });
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <nav className="border-b px-6 py-3 flex items-center gap-6">
-        <span className="font-bold text-lg">CE-SPU</span>
-        <Link to="/" className="text-sm hover:underline [&.active]:font-semibold">
-          หน้าแรก
-        </Link>
-        <Link to="/about" className="text-sm hover:underline [&.active]:font-semibold">
-          เกี่ยวกับ
-        </Link>
-        <Link to="/counter" className="text-sm hover:underline [&.active]:font-semibold">
-          Counter
-        </Link>
-      </nav>
-      <main className="p-6">
+    <>
+      <Toaster position="top-right" richColors />
+      {isAdmin ? (
         <Outlet />
-      </main>
-    </div>
+      ) : (
+        <div className="min-h-screen bg-background text-foreground">
+          <nav className="border-b px-6 py-3 flex items-center gap-6">
+            <span className="font-bold text-lg">CE-SPU</span>
+            <Link to="/" className="text-sm hover:underline [&.active]:font-semibold">
+              หน้าแรก
+            </Link>
+            <Link
+              to="/admin/activities"
+              className="ml-auto text-sm text-muted-foreground hover:underline"
+            >
+              Admin ↗
+            </Link>
+          </nav>
+          <main className="p-6">
+            <Outlet />
+          </main>
+        </div>
+      )}
+    </>
   );
 }
